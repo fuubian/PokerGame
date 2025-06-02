@@ -2,6 +2,7 @@ package game.utils;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 
 import game.deck.Card;
@@ -33,62 +34,93 @@ public class CardCombinationCalculator {
 		
 	}
 	
-	private CardCombination checkForOnePair(Card cards[]) {
-		ArrayList<Integer> valueList = new ArrayList<>();
-		int pairValue = 0;
+	/*
+	 * This method checks whether a pair, two pairs, a triplet, a full house, or a quad occurs and returns the respective hand combination.
+	 * If none of these combinations occur, null is returned.
+	 */
+	private CardCombination checkForPairingsOverall(Card cards[]) {
+		HashMap<Integer, Integer> valueCounter = new HashMap<>();
+		int numberOfPairs = 0;
 		
+		// Store occurrences in HashMap
 		for (int i = 0; i < cards.length; i++) {
 			int cardValue = cards[i].getValue();
 			
-			if (valueList.contains(cardValue)) {
-				pairValue = cardValue;
-			}
-			valueList.add(cardValue);
-		}
-		
-		// Return CardCombination if a pair was found
-		if (pairValue != 0) {
-			int topValues[] = new int[Constants.NUMBER_COMMUNITY_CARDS];
-			
-			valueList.remove(pairValue);
-			valueList.remove(pairValue);
-			topValues[0] = pairValue;
-			topValues[1] = pairValue;
-			
-			valueList.sort( (a,b) -> { return -1 * a.compareTo(b); } );
-			for (int i = 0; i < topValues.length-2; i++) {
-				topValues[i+2] = valueList.get(i);
-			}
-			
-			try {
-				return new CardCombination(HandRanking.ONE_PAIR, topValues);
-			} catch (Exception e) {
-				e.printStackTrace();
+			if (valueCounter.containsKey(cardValue)) {
+				valueCounter.put(cardValue, valueCounter.get(cardValue)+1);
 			}
 		}
 		
-		// If no pair was found
+		// Check for Full House
+		// TODO: Optimize that 2 triplets may be part of the cards
+		if (valueCounter.containsValue(3) && valueCounter.containsValue(2)) {
+			return this.checkForFullHouse(valueCounter);
+		}
+		
+		// Check for Four Of A Kind and Three Of A Kind
+		for (int i = 4; i >= 3; i--) {
+			if (valueCounter.containsValue(i)) {
+				try {
+					return this.checkForTripleQuads(valueCounter, i);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		// Check for pairs
+		if (valueCounter.containsValue(2)) {
+			return this.checkForPairs(valueCounter);
+		}
+		
 		return null;
 	}
 	
-	private boolean checkForTwoPair(Card cards[]) {
-		ArrayList<Integer> valueList = new ArrayList<>();
-		int numberOfPairs = 0;
-		
-		for (int i = 0; i < cards.length; i++) {
-			int cardValue = cards[i].getValue();
-			
-			if (valueList.contains(cardValue)) {
-				numberOfPairs += 1;
-				
-				if (numberOfPairs == 2) {
-					return true;
-				}
-			}
-			valueList.add(cardValue);
+	private CardCombination checkForPairs(HashMap<Integer, Integer> valueCounter) {
+		return null;
+	}
+	
+	private CardCombination checkForTripleQuads(HashMap<Integer, Integer> valueCounter, int checkedCount) throws Exception {
+		if (checkedCount != 3 && checkedCount != 4) {
+			throw new Exception("An unexpected value was used to examine whether a tripple or a quad occur.\nExpected value: 3 or 4\n Received value: " + checkedCount);
 		}
 		
-		return false;
+		if (valueCounter.containsValue(checkedCount)) {
+			int topValues[] = new int[Constants.NUMBER_COMMUNITY_CARDS];
+			
+			for (int cardValue : valueCounter.keySet()) {
+				if (valueCounter.get(cardValue) == checkedCount) {
+					for (int i = 0; i < checkedCount; i++) {
+						topValues[i] = cardValue;
+					}
+					
+					valueCounter.remove(cardValue);
+					break;
+				}
+			}
+			
+			// Sorting converted HashSet to find highest card
+			ArrayList<Integer> sortedValues = new ArrayList<Integer>(valueCounter.keySet());
+			sortedValues.sort( (a,b) -> { return -1 * a.compareTo(b); } );
+			
+			// Add highest cards to topValues
+			for (int i = 0; i+3 <= checkedCount; i++) {
+				topValues[checkedCount+i] = sortedValues.get(i);
+			}
+			
+			HandRanking ranking = (checkedCount == 4) ? HandRanking.QUADS : HandRanking.TRIPLE;
+			return new CardCombination(ranking, topValues);
+		}
+		
+		return null;
+	}
+	
+	private CardCombination checkForFullHouse(HashMap<Integer, Integer> valueCounter) {
+		if (valueCounter.containsValue(3) && valueCounter.containsValue(2)) {
+			if 
+		}
+		
+		return null;
 	}
 	
 	private boolean checkForStraight(Card cards[]) {
