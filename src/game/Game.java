@@ -81,39 +81,48 @@ public class Game {
 		try {			
 			System.out.println("A new round has started.\n");
 			
-			// Handing out the hand cards
-			this.gameDeck = new Deck();
-			this.comunnityCards = new Card[Constants.NUMBER_COMMUNITY_CARDS];
-			for (Player player : playerList) {
-				if (player.getPlayerState() != PlayerState.ELIMINATED) {
-					Card[] playerHandCards = new Card[Constants.NUMBER_CARDS_ON_HAND];
-					for (int i = 0; i < Constants.NUMBER_CARDS_ON_HAND; i++)
-						playerHandCards[i] = this.gameDeck.drawCard();
-					
-					player.dealCards(playerHandCards);
-				}
-			}
-			System.out.println();
-			
-			// Getting the blind positions
-			int[] blindPositions = this.obtainBlindPositions();
-			
-			// Requesting the blinds
-			for (int i = 1; i <= 2; i++) {
-				this.currentMainPot += this.playerList[blindPositions[i-1]].requestCoins(i * this.smallBlind);
-				
-				String playerName = this.playerList[blindPositions[i-1]].getPlayerName();
-				System.out.println(playerName + " paid the blind of " + (i * this.smallBlind) + " coins.");
-			}
-			
-			// Increasing round counter
 			this.currentRoundNumber++;
-			
-			System.out.println();
+			this.serveHandCardsToPlayers();
+			this.requestBlinds();		
 		} catch (Exception e) {
 			System.out.println("Unable to initialize round.");
 			e.printStackTrace();
 		}
+	}
+
+	private void requestBlinds() {
+		// Getting the blind positions
+		int[] blindPositions = this.obtainBlindPositions();
+		
+		// Requesting the blinds
+		for (int i = 1; i <= 2; i++) {
+			this.currentMainPot += this.playerList[blindPositions[i-1]].requestCoins(i * this.smallBlind);
+			
+			String playerName = this.playerList[blindPositions[i-1]].getPlayerName();
+			System.out.println(playerName + " paid the blind of " + (i * this.smallBlind) + " coins.");
+		}
+		
+		System.out.println();
+	}
+
+	private void serveHandCardsToPlayers() throws Exception {
+		this.gameDeck = new Deck();
+		this.comunnityCards = new Card[Constants.NUMBER_COMMUNITY_CARDS];
+		
+		for (Player player : this.playerList) {
+			if (player.getPlayerState() != PlayerState.ELIMINATED) {
+				this.serveHandCardsToOnePlayer(player);
+			}
+		}
+		System.out.println();
+	}
+
+	private void serveHandCardsToOnePlayer(Player player) throws Exception {
+		Card[] playerHandCards = new Card[Constants.NUMBER_CARDS_ON_HAND];
+		for (int i = 0; i < Constants.NUMBER_CARDS_ON_HAND; i++)
+			playerHandCards[i] = this.gameDeck.drawCard();
+		
+		player.dealCards(playerHandCards);
 	}
 	
 	/*

@@ -71,7 +71,7 @@ public class Player {
 	
 	private PlayMove check() {
 		try {
-			return new PlayMove(PlayMoveType.CHECK);
+			return PlayMove.createCheckMove();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -80,23 +80,16 @@ public class Player {
 	}
 	
 	private PlayMove call(int coins) {
-		return new PlayMove(PlayMoveType.CALL, coins);
+		return PlayMove.createCallMove(coins);
 	}
 	
 	private PlayMove raise(int coins) {
-		return new PlayMove(PlayMoveType.RAISE, coins);
+		return PlayMove.createRaiseMove(coins);
 	}
 
 	private PlayMove foldHand() {
 		this.playerHandState = PlayerHandState.FOLDED;
-		
-		try {
-			return new PlayMove(PlayMoveType.FOLD);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		
-		return null;
+		return PlayMove.createFoldMove();
 	}
 	
 }
