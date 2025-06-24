@@ -8,8 +8,8 @@ import game.deck.Card;
 import game.deck.CardType;
 import game.deck.CardValue;
 import game.utils.CardCombination;
-import game.utils.CardCombinationCalculator;
 import game.utils.HandRanking;
+import game.utils.calculator.CardCombinationCalculator;
 
 class CombinationCalculatorTest {
 
